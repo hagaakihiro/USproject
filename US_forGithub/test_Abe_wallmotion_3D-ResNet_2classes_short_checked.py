@@ -42,7 +42,7 @@ from keras.layers.merge import Multiply
 import sys
 import csv
 
-import dicom
+import pydicom as dicom
 import pylab
 import glob
 from DicomRawRead import load_DICOM_image, load_Struct, load_One_Simple_Raw_image, load_One_Simple_Raw_image_3D
@@ -361,18 +361,18 @@ model.summary()
 
 
 
-
 ###########################################################################追加部分
 from keras.layers import Concatenate
+input_img = Input(shape = shape)
 
-def conv_block(input, conv_size = (3, 3, 3)):
-    x = conv3D(32, kernel_size = (3, 3, 3), strides = (1, 1, 1), padding='same',
-               kernel_initializer='he_normal')(input_s)
+def conv_block(x, conv_size = (3, 3, 3)):
+    x = Conv3D(32, kernel_size = conv_size, strides = (1, 1, 1), padding='same',
+               kernel_initializer='he_normal')(x)
     x = BatchNormalization()(x)
-    x = Activation(LeakyReLU(alpha=0.02))(x)
+    x = LeakyReLU(alpha=0.02)(x)
     return x
 
-x = conv_block(input_s)
+x = conv_block(input_img)
 x = MaxPooling3D((2, 2, 2), padding = 'same')(x)
 x = Dropout(0.5)(x)
 
@@ -381,37 +381,37 @@ x = AveragePooling3D((2, 2, 2), padding = 'same')(x)
 x = Dropout(0.5)(x)
 
 x = conv_block(x, conv_size=(1, 3, 3))
-x = Activation(LeakyReLU(alpha=0.02))(x)
+x = LeakyReLU(alpha=0.02)(x)
 y = conv_block(x, conv_size=(1, 3, 3))
-y = Activation(LeakyReLU(alpha=0.02))(y)
+y = LeakyReLU(alpha=0.02)(y)
 x = Concatenate(axis = -1)([x, y])
 x = Dropout(0.5)(x)
 x = MaxPooling3D((1, 2, 2), padding = 'same')(x)
 
 x = conv_block(x, conv_size=(1, 3, 3))
-x = Activation(LeakyReLU(alpha=0.02))(x)
+x = LeakyReLU(alpha=0.02)(x)
 y = conv_block(x, conv_size=(1, 3, 3))
-y = Activation(LeakyReLU(alpha=0.02))(y)
+y = LeakyReLU(alpha=0.02)(y)
 x = Concatenate(axis = -1)([x, y])
 x = Dropout(0.5)(x)
 x = AveragePooling3D((1, 2, 2), padding = 'same')(x)
 
 x = conv_block(x, conv_size=(1, 3, 3))
-x = Activation(LeakyReLU(alpha=0.02))(x)
+x = LeakyReLU(alpha=0.02)(x)
 y = conv_block(x, conv_size=(1, 3, 3))
-y = Activation(LeakyReLU(alpha=0.02))(y)
+y = LeakyReLU(alpha=0.02)(y)
 x = Concatenate(axis = -1)([x, y])
 x = Dropout(0.5)(x)
 x = MaxPooling3D((1, 2, 2), padding = 'same')(x)
 
 x = Flatten()(x)
 x = Dense(128)(x)
-x = Activation(LeakyReLU(alpha=0.02))(x)
+x = LeakyReLU(alpha=0.02)(x)
 x = Dropout(0.5)(x)
 x = Dense(num_class)(x)
 answer = Activation("softmax")(x)
 
-model = Model(num_class, answer)
+model = Model(input_img, answer)
 ###########################################################################追加部分
 
 
@@ -480,7 +480,7 @@ for itest in range(istep):
         #acc_train =  history.history['acc'][np.argmin(history.history['val_loss'])]
         threshold_val =  history.history['val_loss'][np.argmin(history.history['val_loss'])]
         threshold_train =  history.history['loss'][np.argmin(history.history['val_loss'])]
-        print("loss values:" jj, threshold_train, threshold_val)
+        print("loss values:", jj, threshold_train, threshold_val)
 
         #Learing plot
         imgname = '%s/plot_loss_%02d_%02d.png' % (outfoldername,itest,jj)
