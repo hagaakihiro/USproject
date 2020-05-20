@@ -1,17 +1,4 @@
 '''
-阿部の方で作成中です。
-colsize = 120
-rowsize = 120
-height = 10
-shape = (height, colsize, rowsize, 1)
-
-num_class = 2
-
-model = CNN_model2(num_class, shape)
-
-# CNN_model2 が neural network
-
-'''
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
@@ -42,7 +29,11 @@ from keras.layers.merge import Multiply
 import sys
 import csv
 
-import pydicom as dicom
+try:
+    import pydicom as dicom      # for ver 1.0 or more
+except:
+    import dicom                 # for ver 0.9 or less
+
 import pylab
 import glob
 from DicomRawRead import load_DICOM_image, load_Struct, load_One_Simple_Raw_image, load_One_Simple_Raw_image_3D
