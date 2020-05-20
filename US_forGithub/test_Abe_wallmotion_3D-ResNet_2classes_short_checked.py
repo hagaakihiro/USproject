@@ -364,7 +364,7 @@ def conv_block(x, conv_size = (3, 3, 3)):
     x = Dropout(0.5)(x)
     return x
 
-def res_block(x)
+def res_block(x):
     x = conv_block(x, conv_size=(1, 3, 3))
     x = LeakyReLU(alpha=0.02)(x)
     y = conv_block(x, conv_size=(1, 3, 3))
