@@ -1,6 +1,17 @@
+'''
 阿部の方で作成中です。
+colsize = 120
+rowsize = 120
+height = 10
+shape = (height, colsize, rowsize, 1)
 
+num_class = 2
 
+model = CNN_model2(num_class, shape)
+
+# CNN_model2 が neural network
+
+'''
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
@@ -85,7 +96,7 @@ def CNN_model2(num_class,input_s):
     return model
 #################################
 def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,list_foldername2,ShiftData3,list_foldername3,list_N,list_LAD,list_LCX,list_RCA,list_AI,list_AI_LAD,list_AI_LCX,list_AI_RCA,list_4,list_3,colsize, rowsize, height, bb):
-    
+
     # Removed data for Data2 database
     rem_list_Data2_LAD_s = [36]
     rem_list_Data2_RCA_s = [18,20,23,27]
@@ -102,7 +113,7 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
     rem_list_Data2_LAD_4 = [21]
     rem_list_Data2_LCX_4 = [6]
     ###
-    
+
     X = []
     Y = []
     XT = []
@@ -115,12 +126,12 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
         Shift.columns = ["file","machine","mode","4","5","6","7","8","9","10","11"]
         modeshift = Shift[Shift["mode"] == mode]
         num_s = len(modeshift.iloc[:,0])
-        # For 2 classes 
+        # For 2 classes
         if iAsy == 0:
             cl_num = 0
         else:
             cl_num = 1
-        
+
         for ip in range(num_s):
             for ic in range(modeshift.iloc[ip,10]):
                 if iAsy == 0:
@@ -143,7 +154,7 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
                     #sys.exit()
 
                     img = img_to_array(im)
-                    
+
                     if ip+itest == (ip+itest)//istep*istep:
                         if iphase == "00":
                             XT.append(img)
@@ -164,7 +175,7 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
                                 X.append(img)
                                 Y.append(cl_num)
                                 #print(cl_num, filename_mean)
-                    
+
     #sys.exit()
 
     # Data2
@@ -174,7 +185,7 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
         Shift2.columns = ["file","machine","mode","4","5","6","7","8","9","10","11"]
         modeshift2 = Shift2[Shift2["mode"] == mode]
         num_s = len(modeshift2.iloc[:,0])
-        # For 2 classes 
+        # For 2 classes
         if iAsy == 0:
             cl_num = 0
         else:
@@ -227,20 +238,20 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
                                 Y.append(cl_num)
                     """
     #sys.exit()
-    
+
     # AI-AMED data
     its_num = 0
     ShiftA = pd.read_csv(ShiftData3[0], encoding="SHIFT-JIS")
     ShiftA2 = ShiftA[ShiftA["Asy"] != "999"]
     ShiftA3 = ShiftA2[ShiftA2["Asy"] != "none"]
-    ShiftA4 = ShiftA3[ShiftA3["mode"] == mode]    
+    ShiftA4 = ShiftA3[ShiftA3["mode"] == mode]
     datalen = len(ShiftA4.iloc[:,0])
-    
+
     for ip in range(datalen):
         filename = ShiftA4.iloc[ip,0]
         num_cycles = ShiftA4.iloc[ip,10]
         iAsy = ShiftA4.iloc[ip,12]
-        # For 2 classes 
+        # For 2 classes
         if iAsy == "0":
             cl_num = 0
         else:
@@ -264,7 +275,7 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
                 #    plt.imshow(im[ii,:,:])
                 #    plt.show()
                 img = img_to_array(im)
-                    
+
                 if ip+itest == (ip+itest)//istep*istep:
                     if iphase == "00":
                         XT.append(img)
@@ -279,8 +290,8 @@ def loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,lis
                     X.append(img)
                     Y.append(cl_num)
                     #print(cl_num,filename_mean)
-                    
-                    
+
+
         its_num += 1
     return X,Y,XT,YT,XV,YV
 #    sys.exit()
@@ -348,6 +359,63 @@ shape = (height, colsize, rowsize, 1)
 model = CNN_model2(num_class, shape)
 model.summary()
 
+
+
+
+###########################################################################追加部分
+from keras.layers import Concatenate
+
+def conv_block(input, conv_size = (3, 3, 3)):
+    x = conv3D(32, kernel_size = (3, 3, 3), strides = (1, 1, 1), padding='same',
+               kernel_initializer='he_normal')(input_s)
+    x = BatchNormalization()(x)
+    x = Activation(LeakyReLU(alpha=0.02))(x)
+    return x
+
+x = conv_block(input_s)
+x = MaxPooling3D((2, 2, 2), padding = 'same')(x)
+x = Dropout(0.5)(x)
+
+x = conv_block(x)
+x = AveragePooling3D((2, 2, 2), padding = 'same')(x)
+x = Dropout(0.5)(x)
+
+x = conv_block(x, conv_size=(1, 3, 3))
+x = Activation(LeakyReLU(alpha=0.02))(x)
+y = conv_block(x, conv_size=(1, 3, 3))
+y = Activation(LeakyReLU(alpha=0.02))(y)
+x = Concatenate(axis = -1)([x, y])
+x = Dropout(0.5)(x)
+x = MaxPooling3D((1, 2, 2), padding = 'same')(x)
+
+x = conv_block(x, conv_size=(1, 3, 3))
+x = Activation(LeakyReLU(alpha=0.02))(x)
+y = conv_block(x, conv_size=(1, 3, 3))
+y = Activation(LeakyReLU(alpha=0.02))(y)
+x = Concatenate(axis = -1)([x, y])
+x = Dropout(0.5)(x)
+x = AveragePooling3D((1, 2, 2), padding = 'same')(x)
+
+x = conv_block(x, conv_size=(1, 3, 3))
+x = Activation(LeakyReLU(alpha=0.02))(x)
+y = conv_block(x, conv_size=(1, 3, 3))
+y = Activation(LeakyReLU(alpha=0.02))(y)
+x = Concatenate(axis = -1)([x, y])
+x = Dropout(0.5)(x)
+x = MaxPooling3D((1, 2, 2), padding = 'same')(x)
+
+x = Flatten()(x)
+x = Dense(128)(x)
+x = Activation(LeakyReLU(alpha=0.02))(x)
+x = Dropout(0.5)(x)
+x = Dense(num_class)(x)
+answer = Activation("softmax")(x)
+
+model = Model(num_class, answer)
+###########################################################################追加部分
+
+
+
 outfoldername = "./tensorlog"
 if not os.path.exists(outfoldername):
     os.makedirs(outfoldername)
@@ -361,7 +429,7 @@ for itest in range(istep):
     print("loading data ...")
     X,Y,XT,YT,XV,YV = loading_usimage(itest,mode,list_Asy,ShiftData,list_foldername,ShiftData2,list_foldername2,ShiftData3,list_foldername3,list_N,list_LAD,list_LCX,list_RCA,list_AI,list_AI_LAD,list_AI_LCX,list_AI_RCA,list_4,list_3,colsize, rowsize, height, bb)
 
-        
+
     X_train = np.asarray(X)
     Y_train = np.asarray(Y)
     X_val = np.asarray(XV)
@@ -375,7 +443,7 @@ for itest in range(istep):
 
     Y_train = np_utils.to_categorical(Y_train, num_class)
     Y_val = np_utils.to_categorical(Y_val, num_class)
-    
+
     X_test = np.asarray(XT)
     ndim_test = X_test.shape[0]
     X_test = np.reshape(X_test,(ndim_test, height, colsize, rowsize, 1))
@@ -386,14 +454,14 @@ for itest in range(istep):
     print("test data:  ", X_test.shape)
     #sys.exit()
     num_test = len(X_test)
-    
+
     acc_check = 0
     max_acc = 0
     jj_sum = 0
     # model optimization #
     for jj in range(1):
         model = model_from_json(open(model_name).read())
-        
+
         ## Model save information
         fpath_n = '%s/weights_%02d_%02d.hdf5' % (outfoldername,itest,jj)
         cp_cb = ModelCheckpoint(filepath = fpath_n, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
@@ -405,7 +473,7 @@ for itest in range(istep):
         ##
         model.compile(loss='categorical_crossentropy', optimizer=Adamax(), metrics=['accuracy'])
         history = model.fit(X_train, Y_train, batch_size=32, epochs=nepo, validation_data = (X_val, Y_val), verbose = 1, callbacks=[cp_cb, lr_cb])
-        
+
         acc_val = history.history['val_accuracy'][np.argmin(history.history['val_loss'])]
         acc_train =  history.history['accuracy'][np.argmin(history.history['val_loss'])]
         #acc_val = history.history['val_acc'][np.argmin(history.history['val_loss'])]
@@ -413,7 +481,7 @@ for itest in range(istep):
         threshold_val =  history.history['val_loss'][np.argmin(history.history['val_loss'])]
         threshold_train =  history.history['loss'][np.argmin(history.history['val_loss'])]
         print("loss values:" jj, threshold_train, threshold_val)
-        
+
         #Learing plot
         imgname = '%s/plot_loss_%02d_%02d.png' % (outfoldername,itest,jj)
         plt.plot(np.log(history.history['loss']))
@@ -425,8 +493,8 @@ for itest in range(istep):
         plt.savefig(imgname)
         plt.close("all")
         output_name = '%s/loss_%02d_%02d.csv' % (outfoldername,itest,jj)
-    
-        model.load_weights(fpath_n) 
+
+        model.load_weights(fpath_n)
         p_table = model.predict(X_test, batch_size=1, verbose=0)
 
         predict_classes = np.argmax(p_table,axis=1)
@@ -446,11 +514,11 @@ for itest in range(istep):
                     table[1,1] += 1
         print(table)
         test_acc = (table[0,0]+table[1,1])/num_test
-        
+
         output_data_0 = pd.DataFrame(table)
         outfilename_0 = '%s/table_%02d.csv'% (outfoldername, itest)
         output_data_0.to_csv(outfilename_0, index=None,header=["NOR","ABN"])
-        
+
         output_d = pd.DataFrame([[itest,jj,sum_acc,acc_train,acc_val,threshold_train,threshold_val,test_acc]])
         if itest == 0 and jj == 0:
             output_data_acc = output_d
@@ -462,5 +530,5 @@ for itest in range(istep):
         output_data_acc.to_csv(outfilename_0,index=False,encoding="SHIFT-JIS")
 
         # model optimization -- end#
-        
+
 sys.exit()
