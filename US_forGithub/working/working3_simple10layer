@@ -418,9 +418,9 @@ model.summary()
 #Non-trainable params: 64
 
 #this model
-#Total params: 509,858
-#Trainable params: 508,578
-#                                                                                                             Non-trainable params: 1,280
+#Total params: 307,106
+#Trainable params: 305,826
+#Non-trainable params: 1,280                                                                                                  Non-trainable params: 1,280
 ###########################################################################追加部分
 
 
