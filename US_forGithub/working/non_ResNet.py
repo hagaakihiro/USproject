@@ -370,8 +370,7 @@ shape = (height, colsize, rowsize, 1)
 from keras.layers import Concatenate
 input_img = Input(shape = shape)
 
-x = Conv3D(filters = 32, kernel_size = (3, 3, 3),
-           strides = (1, 1, 1),
+x = Conv3D(filters = 32, kernel_size = (3, 3, 3), strides = (1, 1, 1),
            padding='same', kernel_initializer='he_normal',
            kernel_regularizer=l2(0.01))(input_img)
 x = BatchNormalization()(x)
@@ -379,32 +378,28 @@ x = LeakyReLU(alpha = 0.02)(x)
 x = MaxPooling3D((2, 2, 2), padding = 'valid')(x)
 x = Dropout(0.5)(x)
 
-x = Conv3D(filters = 32, kernel_size = (3, 3, 3),
-           strides = (1, 1, 1),
+x = Conv3D(filters = 32, kernel_size = (3, 3, 3), strides = (1, 1, 1),
            padding='same', kernel_initializer='he_normal',
            kernel_regularizer=l2(0.01))(input_img)
 x = LeakyReLU(alpha = 0.02)(x)
 x = AveragePooling3D((2, 2, 2), padding = 'valid')(x)
 x = Dropout(0.5)(x)
 
-x = Conv3D(filters = 32, kernel_size = (3, 3, 3),
-           strides = (1, 1, 1),
+x = Conv3D(filters = 32, kernel_size = (3, 3, 3), strides = (1, 1, 1),
            padding='same', kernel_initializer='he_normal',
            kernel_regularizer=l2(0.01))(input_img)
 x = LeakyReLU(alpha = 0.02)(x)
 x = MaxPooling3D((2, 2, 2), padding = 'valid')(x)
 x = Dropout(0.5)(x)
 
-x = Conv3D(filters = 32, kernel_size = (3, 3, 3),
-           strides = (1, 1, 1),
+x = Conv3D(filters = 32, kernel_size = (3, 3, 3), strides = (1, 1, 1),
            padding='same', kernel_initializer='he_normal',
            kernel_regularizer=l2(0.01))(input_img)
 x = LeakyReLU(alpha = 0.02)(x)
 x = AveragePooling3D((2, 2, 2), padding = 'valid')(x)
 x = Dropout(0.5)(x)
 
-x = Conv3D(filters = 32, kernel_size = (3, 3, 3),
-           strides = (1, 1, 1),
+x = Conv3D(filters = 32, kernel_size = (3, 3, 3), strides = (1, 1, 1),
            padding='same', kernel_initializer='he_normal',
            kernel_regularizer=l2(0.01))(input_img)
 x = LeakyReLU(alpha = 0.02)(x)
